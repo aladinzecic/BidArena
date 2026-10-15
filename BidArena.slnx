@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BidArena.Api/BidArena.Api.csproj" />
+    <Project Path="src/BidArena.Application/BidArena.Application.csproj" />
+    <Project Path="src/BidArena.Domain/BidArena.Domain.csproj" />
+    <Project Path="src/BidArena.Infrastructure/BidArena.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BidArena.Tests/BidArena.Tests.csproj" />
+  </Folder>
+</Solution>

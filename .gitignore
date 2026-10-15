@@ -1,0 +1,44 @@
+## Build
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+publish/
+TestResults/
+*.nupkg
+*.snupkg
+
+## Logovi (Serilog rolling file sink piše u logs/)
+logs/
+*.log
+
+## Tajne i lokalna konfiguracija: NIKAD u repo (Jwt__Key, lozinke...)
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.Local.json
+appsettings.*.local.json
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+## Code coverage
+coverage*.xml
+*.coverage
+*.coveragexml
+coverage/
+
+## OS
+.DS_Store
+Thumbs.db
+**/uploads/

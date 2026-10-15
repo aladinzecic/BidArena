@@ -1,0 +1,26 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+
+.git/
+.github/
+.gitignore
+
+# Testovi nisu potrebni za build API image-a
+tests/
+
+# Tajne i logovi nikad ne idu u image
+.env
+.env.*
+**/logs/
+**/*.log
+
+Dockerfile*
+**/Dockerfile*
+docker-compose*.yml
+.dockerignore
+*.md
+**/uploads/

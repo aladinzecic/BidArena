@@ -1,0 +1,54 @@
+name: bidarena
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-bidarena}"
+      POSTGRES_USER: "${POSTGRES_USER:-postgres}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Postavi POSTGRES_PASSWORD u .env fajlu (vidi .env.example)}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # $$ sprečava da compose sam zameni promenljive; shell u kontejneru ih čita iz svog okruženja.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/BidArena.Api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "${ConnectionStrings__DefaultConnection:?Postavi ConnectionStrings__DefaultConnection u .env fajlu}"
+      Jwt__Key: "${Jwt__Key:?Postavi Jwt__Key u .env fajlu (vidi .env.example)}"
+      Jwt__Issuer: "${Jwt__Issuer:?Postavi Jwt__Issuer u .env fajlu}"
+      Jwt__Audience: "${Jwt__Audience:?Postavi Jwt__Audience u .env fajlu}"
+      Database__MigrateOnStartup: "${Database__MigrateOnStartup:-false}"
+    volumes:
+      - apilogs:/app/logs
+      - apiuploads:/app/uploads
+
+  web:
+    build:
+      context: frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-3000}:80"
+
+volumes:
+  pgdata:
+  apilogs:
+  apiuploads:
