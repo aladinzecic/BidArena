@@ -1,5 +1,6 @@
 # Render Blueprint: API (Docker, free) + frontend (static site, free).
-# Baza je na Neon-u, slike na Cloudflare R2 (vrednosti označene sync: false unosiš u Render panelu).
+# Baza je na Neon-u, slike na Supabase Storage preko S3 API-ja (isti kod radi i za Cloudflare R2).
+# Vrednosti označene sync: false unosiš u Render panelu.
 # Uputstvo: DEPLOY-RENDER.md
 services:
   - type: web
@@ -29,15 +30,19 @@ services:
       - key: FileStorage__Provider
         value: R2
       - key: R2__ServiceUrl
-        sync: false   # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+        sync: false   # Supabase: https://<project-ref>.storage.supabase.co/storage/v1/s3 (R2: https://<ACCOUNT_ID>.r2.cloudflarestorage.com)
       - key: R2__Bucket
-        sync: false
+        sync: false   # ime bucket-a, npr. slike
       - key: R2__AccessKeyId
         sync: false
       - key: R2__SecretAccessKey
         sync: false
       - key: R2__PublicBaseUrl
-        sync: false   # https://pub-xxxx.r2.dev (bez završne /)
+        sync: false   # Supabase: https://<project-ref>.supabase.co/storage/v1/object/public/<bucket> (bez završne /)
+      - key: R2__Region
+        sync: false   # Supabase: region projekta, npr. eu-west-1 (za R2 ostavi prazno)
+      - key: R2__DisablePayloadSigning
+        value: "false"   # Supabase traži potpisan sadržaj; za R2 stavi true
 
   - type: web
     name: bidarena-web

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace BidArena.Infrastructure.Services;
 
 /// <summary>
-/// IFileStorage nad Cloudflare R2 (S3 API). Fajlovi se čuvaju kao {folder}/{guid}{ext}, a klijentu se vraća
+/// IFileStorage nad bilo kojim S3-kompatibilnim skladištem (Cloudflare R2, Supabase Storage...). Fajlovi se čuvaju kao {folder}/{guid}{ext}, a klijentu se vraća
 /// apsolutni javni URL (PublicBaseUrl + "/" + ključ).
 /// </summary>
 public sealed class R2FileStorage : IFileStorage, IDisposable
@@ -24,6 +24,7 @@ public sealed class R2FileStorage : IFileStorage, IDisposable
     private readonly AmazonS3Client _client;
     private readonly string _bucket;
     private readonly string _publicBaseUrl;
+    private readonly bool _disablePayloadSigning;
 
     public R2FileStorage(IOptions<R2StorageSettings> options)
     {
@@ -39,17 +40,24 @@ public sealed class R2FileStorage : IFileStorage, IDisposable
 
         _bucket = settings.Bucket;
         _publicBaseUrl = settings.PublicBaseUrl.TrimEnd('/');
+        _disablePayloadSigning = settings.DisablePayloadSigning;
+
+        var config = new AmazonS3Config
+        {
+            ServiceURL = settings.ServiceUrl,
+            ForcePathStyle = true,
+            // R2 ne podržava dodatne checksum-e koje noviji AWS SDK šalje podrazumevano.
+            RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
+            ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED
+        };
+
+        // Supabase Storage proverava region iz potpisa (npr. eu-west-1); za R2 ostaje prazno.
+        if (!string.IsNullOrWhiteSpace(settings.Region))
+            config.AuthenticationRegion = settings.Region;
 
         _client = new AmazonS3Client(
             new BasicAWSCredentials(settings.AccessKeyId, settings.SecretAccessKey),
-            new AmazonS3Config
-            {
-                ServiceURL = settings.ServiceUrl,
-                ForcePathStyle = true,
-                // R2 ne podržava dodatne checksum-e koje noviji AWS SDK šalje podrazumevano.
-                RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
-                ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED
-            });
+            config);
     }
 
     public async Task<string> SaveAsync(
@@ -68,7 +76,7 @@ public sealed class R2FileStorage : IFileStorage, IDisposable
             Key = key,
             InputStream = buffer,
             ContentType = ContentTypes.GetValueOrDefault(extension, "application/octet-stream"),
-            DisablePayloadSigning = true
+            DisablePayloadSigning = _disablePayloadSigning
         }, cancellationToken);
 
         return $"{_publicBaseUrl}/{key}";

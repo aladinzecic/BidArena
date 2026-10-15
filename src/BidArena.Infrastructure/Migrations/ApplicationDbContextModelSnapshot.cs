@@ -243,6 +243,9 @@ namespace BidArena.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -303,6 +306,75 @@ namespace BidArena.Infrastructure.Migrations
                     b.HasIndex("Status", "DueDate");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("BidArena.Domain.Entities.Question", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AnswerText")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime?>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("AskedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("AskedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId", "AskedAt");
+
+                    b.ToTable("Questions");
+                });
+
+            modelBuilder.Entity("BidArena.Domain.Entities.Rating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RatedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RaterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RatedUserId");
+
+                    b.HasIndex("AuctionId", "RaterId")
+                        .IsUnique();
+
+                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("BidArena.Domain.Entities.RefreshToken", b =>
@@ -416,6 +488,9 @@ namespace BidArena.Infrastructure.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("RatingsCount")
+                        .HasColumnType("integer");
 
                     b.Property<int>("SuccessfulAuctionsCount")
                         .HasColumnType("integer");
